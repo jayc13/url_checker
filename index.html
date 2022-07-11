@@ -69,6 +69,8 @@
         <ul id="results"></ul>
     </main>
 
+    <iframe src="https://ui.upshow.tv/20.20.0/index.html" style="height: 108px; width: 192px;"></iframe>
+
     <footer></footer>
     <script>
         window.addEventListener("message", (event) =>  {
@@ -95,6 +97,33 @@
             xhr.onload = () => addResult(label, '✅');
             xhr.onerror = () => addResult(label, '❌');
             xhr.send();
+        }
+    </script>
+    <script>
+        try {
+            //The token was deleted. We'll activate on reload @todo review
+            console.log('Will clear localstorage ');
+            const currentToken = window.localStorage.getItem('access-token');
+
+            window.localStorage.clear();
+            console.log('Cleared localstorage');
+
+            if (currentToken) {
+                try {
+                    window.localStorage.setItem('access-token', currentToken);
+                } catch (err) {
+                    console.error('Error saving access token after cache_clear ');
+                }
+
+            }
+
+            webviewElement.clearData({}, {cache: true}, function() {
+                // Cache cleared
+            });
+
+        } catch (clearCacheErr) {
+            console.log(clearCacheErr);
+
         }
     </script>
 </div>
