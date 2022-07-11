@@ -71,6 +71,13 @@
 
     <footer></footer>
     <script>
+        window.addEventListener("message", (event) =>  {
+            if (event.data === "ping") {
+                event.source.postMessage("pong", event.origin);
+            }
+        }, false);
+    </script>
+    <script>
         function addResult(label, result) {
             const r = document.createElement('li');
             r.innerText = `${label}: ${result}`;
