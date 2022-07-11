@@ -20,6 +20,12 @@
             src="https://code.jquery.com/jquery-3.6.0.min.js"
             integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
             crossorigin="anonymous"></script>
+    <!-- UPshow convertion SDK -->
+    <script async src="https://s2m.internal.upshow.tv/conversion.js"></script>
+    <script>
+      window.upshow_data = window.upshow_data || [];
+      function upshow(action){upshow_data.push(action);}
+    </script>
 </head>
 
 <body class="text-center">
@@ -50,6 +56,7 @@
             "method": "GET",
             success: function () {
                 $('#result').text("Status ✅");
+                upshow('convert')
             },
             error: function (request, status, error) {
                 $('#result').text("Status ❌");
