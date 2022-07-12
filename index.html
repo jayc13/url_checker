@@ -69,9 +69,8 @@
         <ul id="results"></ul>
     </main>
 
-    <footer id="footer">
-
-        <div id="speedtest" style="height: 100px" class="p-3">
+    <footer id="footer" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+        <div id="speedtest" class="p-3">
             <div>Speed Test</div>
             <div><span id="speedtest-result"><i>running ...</i></span></div>
         </div>
@@ -104,12 +103,36 @@
         }
     </script>
     <script>
+        const cacheBustResource = (resource) => `${resource}?upbust=${(new Date()).getTime()}`;
         function parseBoolean(value) {
             if (value === 'true') return true;
             if (value === 'false') return false;
             return !!+value;
         }
         const url = new URL(window.location.href);
+
+        function loadIframe () {
+            if (url.searchParams.get('uiURL')) {
+                const iframeStartTime = new Date().getTime();
+                console.time('UPshow UI Load');
+                const uiIframe = document.createElement('iframe');
+                uiIframe.setAttribute("src", url.searchParams.get('uiURL'));
+                // uiIframe.style.opacity = '0';
+                uiIframe.style.width = '200px';
+                uiIframe.style.height = '113px';
+                uiIframe.loading="lazy"
+                uiIframe.onload = () => {
+                    const iframeEndTime = new Date().getTime();
+                    addResult('UPshow UI', `✅ (${(iframeEndTime - iframeStartTime) / 1000} s)`);
+                    console.timeEnd('UPshow UI Load');
+                };
+                uiIframe.onerror = () => {
+                    addResult('UPshow UI', '❌');
+                };
+                document.getElementById('footer').appendChild(uiIframe);
+            }
+        }
+
         if (parseBoolean(url.searchParams.get('clear_cache'))){
             try {
                 console.log('Will clear localstorage ');
@@ -131,25 +154,6 @@
                 console.log(clearCacheErr);
             }
         }
-
-        if (url.searchParams.get('uiURL')) {
-            const uiIframe = document.createElement('iframe');
-            uiIframe.setAttribute("src", url.searchParams.get('uiURL'));
-            // uiIframe.style.opacity = '0';
-            uiIframe.loading="lazy"
-            uiIframe.onload = () => {
-                addResult('UPshow UI', '✅')
-            };
-            uiIframe.onerror = () => {
-                addResult('UPshow UI', '❌')
-            };
-            document.getElementById('footer').appendChild(uiIframe);
-
-        }
-
-    </script>
-    <script>
-        const cacheBustResource = (resource) => `${resource}?upbust=${(new Date()).getTime()}`;
 
         if (window.performance !== undefined) {
             window.performance.clearResourceTimings();
@@ -175,6 +179,8 @@
 
                 console.log({speedTestResult});
                 document.getElementById('speedtest-result').innerHTML = `${speed.toFixed(2)}<small> MBits/sec</small>`;
+
+                loadIframe();
             };
 
             download.onerror = function (error, msg) {
@@ -182,6 +188,8 @@
             };
 
             download.src = uri;
+        } else {
+            loadIframe();
         }
     </script>
 </div>
