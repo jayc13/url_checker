@@ -135,7 +135,7 @@
         if (url.searchParams.get('uiURL')) {
             const uiIframe = document.createElement('iframe');
             uiIframe.setAttribute("src", url.searchParams.get('uiURL'));
-            uiIframe.style.opacity = '0';
+            // uiIframe.style.opacity = '0';
             uiIframe.loading="lazy"
             uiIframe.onload = () => {
                 addResult('UPshow UI', '✅')
