@@ -140,12 +140,13 @@
 
         if (parseBoolean(url.searchParams.get('clear_cache'))){
             try {
-                document.getElementById('logs').innerText = 'Starting cleaning cache...';
+                document.getElementById('logs').innerText = 'Starting cleaning cache - Step 1/2';
                 setTimeout(() => {
+                    document.getElementById('logs').innerText = 'Starting cleaning cache - Step 2/2';
                     if (!!proxyBridge && !!proxyOrigin) {
                         let msg = { action: "removecache" };
                         proxyBridge.postMessage(msg, proxyOrigin);
-                        document.getElementById('logs').innerText = 'Cleaning cache in process...';
+                        document.getElementById('logs').innerText = 'Cleaning cache - Done';
                     } else {
                         document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!proxyBridge} - ${!!proxyOrigin}`;
                     }
