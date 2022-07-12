@@ -58,7 +58,7 @@
 
 <body>
 
-<div class="d-flex w-75 h-100 p-3 mx-auto flex-column">
+<div class="d-flex w-75 p-3 mx-auto flex-column">
     <header class="">
         <img src="./img/up_logo.svg" alt="UPshow logo" height="32px"/>
         <h3 class=""> UI Checker</h3>
@@ -69,9 +69,13 @@
         <ul id="results"></ul>
     </main>
 
-    <iframe src="https://ui.upshow.tv/20.20.0/index.html" style="height: 108px; width: 192px;"></iframe>
+    <footer id="footer">
 
-    <footer></footer>
+        <div id="speedtest" style="height: 100px" class="p-3">
+            <div>Speed Test</div>
+            <div><span id="speedtest-result"><i>running ...</i></span></div>
+        </div>
+    </footer>
     <script>
         window.addEventListener("message", (event) =>  {
             if (event.data === "ping") {
@@ -88,7 +92,7 @@
 
         const checks = {
             'Trivia Port 8101': 'https://upshowgames.com:8101/socket.io/?gameId=1001&EIO=3&transport=polling&t=1652301209822-0&b64=1',
-            '*.cdninstagram.com': 'https://static.cdninstagram.com/rsrc.php/v3/y9/r/uhXzVt-dlj4.png'
+            '*.cdninstagram.com': 'https://static.cdninstagram.com/rsrc.php/v3/y9/r/uhXzVt-dlj4.png',
         }
 
         for (const [label, url] of Object.entries(checks)) {
@@ -100,30 +104,84 @@
         }
     </script>
     <script>
-        try {
-            //The token was deleted. We'll activate on reload @todo review
-            console.log('Will clear localstorage ');
-            const currentToken = window.localStorage.getItem('access-token');
+        function parseBoolean(value) {
+            if (value === 'true') return true;
+            if (value === 'false') return false;
+            return !!+value;
+        }
+        const url = new URL(window.location.href);
+        if (parseBoolean(url.searchParams.get('clear_cache'))){
+            try {
+                console.log('Will clear localstorage ');
+                const currentToken = window.localStorage.getItem('access-token');
 
-            window.localStorage.clear();
-            console.log('Cleared localstorage');
+                window.localStorage.clear();
+                console.log('Cleared localstorage');
 
-            if (currentToken) {
-                try {
-                    window.localStorage.setItem('access-token', currentToken);
-                } catch (err) {
-                    console.error('Error saving access token after cache_clear ');
+                if (currentToken) {
+                    try {
+                        window.localStorage.setItem('access-token', currentToken);
+                    } catch (err) {
+                        console.error('Error saving access token after cache_clear ');
+                    }
+
                 }
 
+            } catch (clearCacheErr) {
+                console.log(clearCacheErr);
             }
+        }
 
-            webviewElement.clearData({}, {cache: true}, function() {
-                // Cache cleared
-            });
+        if (url.searchParams.get('uiURL')) {
+            const uiIframe = document.createElement('iframe');
+            uiIframe.setAttribute("src", url.searchParams.get('uiURL'));
+            uiIframe.style.opacity = '0';
+            uiIframe.loading="lazy"
+            uiIframe.onload = () => {
+                addResult('UPshow UI', '✅')
+            };
+            uiIframe.onerror = () => {
+                addResult('UPshow UI', '❌')
+            };
+            document.getElementById('footer').appendChild(uiIframe);
 
-        } catch (clearCacheErr) {
-            console.log(clearCacheErr);
+        }
 
+    </script>
+    <script>
+        const cacheBustResource = (resource) => `${resource}?upbust=${(new Date()).getTime()}`;
+
+        if (window.performance !== undefined) {
+            window.performance.clearResourceTimings();
+
+            const uri = cacheBustResource('https://cdn.upshow.tv/10MB.jpg');
+            const bytesToDownload = 10174706;
+
+            const download = new Image();
+
+            download.onload = function () {
+                const perf = window.performance.getEntriesByName(download.src);
+
+                const totalSeconds = perf[0].duration / 1000;
+                const totalMBits = bytesToDownload * 8 / 1024 / 1024;
+
+                const speed = totalMBits / totalSeconds;
+                const speedTestResult = {
+                    speed,
+                    totalSeconds,
+                    totalMBits,
+                    resource: download.src
+                };
+
+                console.log({speedTestResult});
+                document.getElementById('speedtest-result').innerHTML = `${speed.toFixed(2)}<small> MBits/sec</small>`;
+            };
+
+            download.onerror = function (error, msg) {
+                console.error('Invalid image, or error downloading', error, msg);
+            };
+
+            download.src = uri;
         }
     </script>
 </div>
