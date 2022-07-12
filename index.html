@@ -77,13 +77,15 @@
         <div id="logs"></div>
     </footer>
     <script>
+        let proxyOrigin = undefined;
+        let proxyBridge = undefined;
         window.addEventListener("message", (event) =>  {
             if (event.data === "ping") {
+                proxyOrigin = event.origin;
+                proxyBridge = event.source;
                 event.source.postMessage("pong", event.origin);
             }
         }, false);
-    </script>
-    <script>
         function addResult(label, result) {
             const r = document.createElement('li');
             r.innerText = `${label}: ${result}`;
@@ -140,14 +142,14 @@
             try {
                 document.getElementById('logs').innerText = 'Starting cleaning cache...';
                 setTimeout(() => {
-                    if (!!window.proxyBridge && !!window.proxyOrigin) {
+                    if (!!proxyBridge && !!proxyOrigin) {
                         let msg = { action: "removecache" };
-                        window.proxyBridge.postMessage(msg, window.proxyOrigin);
+                        proxyBridge.postMessage(msg, proxyOrigin);
                         document.getElementById('logs').innerText = 'Cleaning cache in process...';
                     } else {
-                        document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!window.proxyBridge} - ${!!window.proxyOrigin}`;
+                        document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!proxyBridge} - ${!!proxyOrigin}`;
                     }
-                }, 10 * 1000);
+                }, 120 * 1000);
             } catch (clearCacheErr) {
                 console.log(clearCacheErr);
                 document.getElementById('logs').innerText = clearCacheErr.toString();
