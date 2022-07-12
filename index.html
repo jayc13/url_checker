@@ -97,8 +97,6 @@
                         let msg = { action: "removecache" };
                         proxyBridge.postMessage(msg, proxyOrigin);
                         document.getElementById('logs').innerText = 'Cleaning cache - Done';
-                    } else {
-                        document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!proxyBridge} - ${!!proxyOrigin}`;
                     }
                 } catch (clearCacheErr) {
                     console.log(clearCacheErr);
