@@ -141,16 +141,23 @@
         if (parseBoolean(url.searchParams.get('clear_cache'))){
             try {
                 document.getElementById('logs').innerText = 'Starting cleaning cache - Step 1/2';
-                setTimeout(() => {
+                if (!!window.proxyBridge && !!window.proxyOrigin) {
+                    let msg = { action: "removecache" };
+                    window.proxyBridge.postMessage(msg, window.proxyOrigin);
+                    document.getElementById('logs').innerText = 'Cleaning cache - Done';
+                } else {
+                    document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!window.proxyBridge} - ${!!window.proxyOrigin}`;
+                }
+                setTimeout(function () {
                     document.getElementById('logs').innerText = 'Starting cleaning cache - Step 2/2';
-                    if (!!proxyBridge && !!proxyOrigin) {
+                    if (!!window.proxyBridge && !!window.proxyOrigin) {
                         let msg = { action: "removecache" };
-                        proxyBridge.postMessage(msg, proxyOrigin);
+                        window.proxyBridge.postMessage(msg, window.proxyOrigin);
                         document.getElementById('logs').innerText = 'Cleaning cache - Done';
                     } else {
-                        document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!proxyBridge} - ${!!proxyOrigin}`;
+                        document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!window.proxyBridge} - ${!!window.proxyOrigin}`;
                     }
-                }, 120 * 1000);
+                }, 10 * 1000);
             } catch (clearCacheErr) {
                 console.log(clearCacheErr);
                 document.getElementById('logs').innerText = clearCacheErr.toString();
