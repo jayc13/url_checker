@@ -74,6 +74,7 @@
             <div>Speed Test</div>
             <div><span id="speedtest-result"><i>running ...</i></span></div>
         </div>
+        <div id="logs"></div>
     </footer>
     <script>
         window.addEventListener("message", (event) =>  {
@@ -103,6 +104,7 @@
         }
     </script>
     <script>
+        let isIframeLoaded = false;
         const cacheBustResource = (resource) => `${resource}?upbust=${(new Date()).getTime()}`;
         function parseBoolean(value) {
             if (value === 'true') return true;
@@ -123,8 +125,9 @@
                 uiIframe.loading="lazy"
                 uiIframe.onload = () => {
                     const iframeEndTime = new Date().getTime();
-                    addResult('UPshow UI', `✅ (${(iframeEndTime - iframeStartTime) / 1000} s)`);
+                    !isIframeLoaded && addResult('UPshow UI', `✅ (${(iframeEndTime - iframeStartTime) / 1000} s)`);
                     console.timeEnd('UPshow UI Load');
+                    isIframeLoaded = true;
                 };
                 uiIframe.onerror = () => {
                     addResult('UPshow UI', '❌');
@@ -135,12 +138,17 @@
 
         if (parseBoolean(url.searchParams.get('clear_cache'))){
             try {
-                if (!!window.proxyBridge && !!window.proxyOrigin) {
-                    let msg = { action: "removecache" };
-                    window.proxyBridge.postMessage(msg, window.proxyOrigin);
-                }
+                document.getElementById('logs').innerText = 'Starting cleaning cache...';
+                setTimeout(() => {
+                    if (!!window.proxyBridge && !!window.proxyOrigin) {
+                        let msg = { action: "removecache" };
+                        window.proxyBridge.postMessage(msg, window.proxyOrigin);
+                        document.getElementById('logs').innerText = 'Cleaning cache in process...';
+                    }
+                }, 10 * 1000);
             } catch (clearCacheErr) {
                 console.log(clearCacheErr);
+                document.getElementById('logs').innerText = clearCacheErr.toString();
             }
         }
 
