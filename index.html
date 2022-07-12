@@ -144,6 +144,8 @@
                         let msg = { action: "removecache" };
                         window.proxyBridge.postMessage(msg, window.proxyOrigin);
                         document.getElementById('logs').innerText = 'Cleaning cache in process...';
+                    } else {
+                        document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!window.proxyBridge} - ${!!window.proxyOrigin}`;
                     }
                 }, 10 * 1000);
             } catch (clearCacheErr) {
