@@ -90,8 +90,8 @@
         }
 
         const checks = {
-            'Trivia Port 8101': 'https://upshowgames.com:8101/socket.io/?gameId=1001&EIO=3&transport=polling&t=1652301209822-0&b64=1',
-            '*.cdninstagram.com': 'https://static.cdninstagram.com/rsrc.php/v3/y9/r/uhXzVt-dlj4.png',
+            'UPshow Trivia': 'https://upshowgames.com:8101/socket.io/?gameId=1001&EIO=3&transport=polling&t=1652301209822-0&b64=1',
+            'Instagram': 'https://static.cdninstagram.com/rsrc.php/v3/y9/r/uhXzVt-dlj4.png',
         }
 
         for (const [label, url] of Object.entries(checks)) {
@@ -135,21 +135,10 @@
 
         if (parseBoolean(url.searchParams.get('clear_cache'))){
             try {
-                console.log('Will clear localstorage ');
-                const currentToken = window.localStorage.getItem('access-token');
-
-                window.localStorage.clear();
-                console.log('Cleared localstorage');
-
-                if (currentToken) {
-                    try {
-                        window.localStorage.setItem('access-token', currentToken);
-                    } catch (err) {
-                        console.error('Error saving access token after cache_clear ');
-                    }
-
+                if (!!window.proxyBridge && !!window.proxyOrigin) {
+                    let msg = { action: "removecache" };
+                    window.proxyBridge.postMessage(msg, window.proxyOrigin);
                 }
-
             } catch (clearCacheErr) {
                 console.log(clearCacheErr);
             }
