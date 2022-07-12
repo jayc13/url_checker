@@ -79,13 +79,41 @@
     <script>
         let proxyOrigin = undefined;
         let proxyBridge = undefined;
+        let isIframeLoaded = false;
+        const cacheBustResource = (resource) => `${resource}?upbust=${(new Date()).getTime()}`;
+        function parseBoolean(value) {
+            if (value === 'true') return true;
+            if (value === 'false') return false;
+            return !!+value;
+        }
+        const url = new URL(window.location.href);
+
+
+        if (parseBoolean(url.searchParams.get('clear_cache'))){
+            try {
+                document.getElementById('logs').innerText = 'Starting cleaning cache - Step 1/2';
+                if (!!proxyBridge && !!proxyOrigin) {
+                    let msg = { action: "removecache" };
+                    proxyBridge.postMessage(msg, proxyOrigin);
+                    document.getElementById('logs').innerText = 'Cleaning cache - Done';
+                } else {
+                    document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!proxyBridge} - ${!!proxyOrigin}`;
+                }
+            } catch (clearCacheErr) {
+                console.log(clearCacheErr);
+                document.getElementById('logs').innerText = clearCacheErr.toString();
+            }
+        }
+
         window.addEventListener("message", (event) =>  {
             if (event.data === "ping") {
                 proxyOrigin = event.origin;
                 proxyBridge = event.source;
                 event.source.postMessage("pong", event.origin);
+                clearCache();
             }
         }, false);
+
         function addResult(label, result) {
             const r = document.createElement('li');
             r.innerText = `${label}: ${result}`;
@@ -104,16 +132,6 @@
             xhr.onerror = () => addResult(label, '❌');
             xhr.send();
         }
-    </script>
-    <script>
-        let isIframeLoaded = false;
-        const cacheBustResource = (resource) => `${resource}?upbust=${(new Date()).getTime()}`;
-        function parseBoolean(value) {
-            if (value === 'true') return true;
-            if (value === 'false') return false;
-            return !!+value;
-        }
-        const url = new URL(window.location.href);
 
         function loadIframe () {
             if (url.searchParams.get('uiURL')) {
@@ -135,32 +153,6 @@
                     addResult('UPshow UI', '❌');
                 };
                 document.getElementById('footer').appendChild(uiIframe);
-            }
-        }
-
-        if (parseBoolean(url.searchParams.get('clear_cache'))){
-            try {
-                document.getElementById('logs').innerText = 'Starting cleaning cache - Step 1/2';
-                if (!!window.proxyBridge && !!window.proxyOrigin) {
-                    let msg = { action: "removecache" };
-                    window.proxyBridge.postMessage(msg, window.proxyOrigin);
-                    document.getElementById('logs').innerText = 'Cleaning cache - Done';
-                } else {
-                    document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!window.proxyBridge} - ${!!window.proxyOrigin}`;
-                }
-                setTimeout(function () {
-                    document.getElementById('logs').innerText = 'Starting cleaning cache - Step 2/2';
-                    if (!!window.proxyBridge && !!window.proxyOrigin) {
-                        let msg = { action: "removecache" };
-                        window.proxyBridge.postMessage(msg, window.proxyOrigin);
-                        document.getElementById('logs').innerText = 'Cleaning cache - Done';
-                    } else {
-                        document.getElementById('logs').innerText = `Impossible to clean Cache, please check if the proxy is running ${!!window.proxyBridge} - ${!!window.proxyOrigin}`;
-                    }
-                }, 10 * 1000);
-            } catch (clearCacheErr) {
-                console.log(clearCacheErr);
-                document.getElementById('logs').innerText = clearCacheErr.toString();
             }
         }
 
